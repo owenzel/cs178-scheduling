@@ -1,7 +1,7 @@
 import Database from 'better-sqlite3';
 import { DB_PATH } from '$env/static/private';
 
-// Database constants:
+// Database constants
 export const MAIN_MEETING = {
     name: 'CS178'
 };
@@ -19,7 +19,7 @@ export function startDb() {
     );
     let row = testDbStatement.get();
     if (row === undefined) {
-        console.log("Database appears empty. Initializing the datbase...");
+        console.log("Database appears empty. Initializing the database...");
         
         const sqlInitDb = `
             CREATE TABLE meetings (
@@ -38,7 +38,8 @@ export function startDb() {
             CREATE TABLE user_responses (
                 id INTEGER PRIMARY KEY,
                 meeting_id INTEGER NOT NULL,
-                user_name_initial TEXT NOT NULL,
+                user_first_name TEXT NOT NULL,
+                user_last_initial TEXT NOT NULL,
                 time_zone TEXT NOT NULL,
                 start_time INTEGER NOT NULL,
                 end_time INTEGER_NOT_NULL,
@@ -50,4 +51,10 @@ export function startDb() {
 
         db.exec(sqlInitDb);
     }
+}
+
+export function getInitialSelections() {
+    const sql = `
+
+    `;
 }
