@@ -1,8 +1,8 @@
 <script>
+	// TODO: Handle fetched selections
 	import Modal from "../../../../../lib/components/Modal.svelte";
 	let columns = new Array(7)
 	let rows = new Array(20)
-	// let state = new Array(rows.length*columns.length).fill(false)
 	let state = []
 	for (let r = 0; r < rows.length; r++) {
 		let arr = []
@@ -32,6 +32,7 @@
 		state[r][c] = !state[r][c]
 	}
 	
+	// TODO: Handle backwards drag
 	const mouseHandler = (r, c) => (e) => {
 		if (e.type === 'mousedown') {
 			if (firstSelectedSlotPos == null) {
@@ -60,6 +61,7 @@
 		}
 	}
 
+	// TODO: Call database function; handle error
 	function saveSelection(e) {
 		const formData = new FormData(e.target);
 		const data = {};
