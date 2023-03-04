@@ -22,8 +22,7 @@ const USER_RESPONSES_TABLE = 'user_responses';
 const USER_RESPONSES_TABLE_FIELDS = {
     id: 'id',
     meeting_id: 'meeting_id',
-    user_first_name: 'user_first_name',
-    user_last_initial: 'user_last_initial',
+    first_name_last_initial: 'first_name_last_initial',
     time_zone: 'time_zone',
     start_time: 'start_time',
     end_time: 'end_time',
@@ -33,55 +32,51 @@ const USER_RESPONSES_TABLE_FIELDS = {
 
 const db = new Database(DB_PATH, { verbose: console.log });
 
-export function startDb() {
-    // Check to see if the database is already initialized
-    let testDbStatement = db.prepare(
-        `SELECT *
-        FROM meetings
-        WHERE
-            name=${MAIN_MEETING.name}
-        ;`
+// Initialize the database: create a meetings and user responses table and insert a starter meeting (for the competition)
+const sqlInitDb = `
+    CREATE TABLE IF NOT EXISTS ${MEETINGS_TABLE} (
+        ${MEETINGS_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
+        ${MEETINGS_TABLE_FIELDS.name} TEXT NOT NULL,
+        ${MEETINGS_TABLE_FIELDS.start_time} INTEGER,
+        ${MEETINGS_TABLE_FIELDS.end_time} INTEGER,
+        ${MEETINGS_TABLE_FIELDS.time_zone} TEXT,
+        ${MEETINGS_TABLE_FIELDS.deadline} INTEGER
     );
-    let row = testDbStatement.get();
-    if (row === undefined) {
-        console.log("Database appears empty. Initializing the database...");
-        
-        const sqlInitDb = `
-            CREATE TABLE ${MEETINGS_TABLE} (
-                ${MEETINGS_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
-                ${MEETINGS_TABLE_FIELDS.name} TEXT NOT NULL,
-                ${MEETINGS_TABLE_FIELDS.start_time} INTEGER,
-                ${MEETINGS_TABLE_FIELDS.end_time} INTEGER,
-                ${MEETINGS_TABLE_FIELDS.time_zone} TEXT,
-                ${MEETINGS_TABLE_FIELDS.deadline} INTEGER
-            );
 
-            INSERT INTO ${MEETINGS_TABLE} (name)
-            VALUES (${MAIN_MEETING.name})
-            ;
+    CREATE TABLE IF NOT EXISTS ${USER_RESPONSES_TABLE} (
+        ${USER_RESPONSES_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
+        ${USER_RESPONSES_TABLE_FIELDS.meeting_id} INTEGER NOT NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} TEXT NOT NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.time_zone} TEXT NOT NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.start_time} INTEGER NOT NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.end_time} INTEGER_NOT_NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.start_location} TEXT NOT NULL,
+        ${USER_RESPONSES_TABLE_FIELDS.end_location} TEXT NOT NULL,
+        FOREIGN KEY (${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial}) REFERENCES ${MEETINGS_TABLE}(${MEETINGS_TABLE_FIELDS.id})
+    );
 
-            CREATE TABLE ${USER_RESPONSES_TABLE} (
-                ${USER_RESPONSES_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
-                ${USER_RESPONSES_TABLE_FIELDS.meeting_id} INTEGER NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.user_first_name} TEXT NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.user_last_initial} TEXT NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.time_zone} TEXT NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.time_zone} INTEGER NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.end_time} INTEGER_NOT_NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.start_location} TEXT NOT NULL,
-                ${USER_RESPONSES_TABLE_FIELDS.end_location} TEXT NOT NULL,
-                FOREIGN KEY (name_id) REFERENCES person(id)
-            );
-        `;
+    INSERT INTO ${MEETINGS_TABLE} (${MEETINGS_TABLE_FIELDS.name}) VALUES ('${MAIN_MEETING.name}');
+`;
 
-        db.exec(sqlInitDb);
-    }
-}
+db.exec(sqlInitDb);
 
-// WORK IN PROGRESS
-export function getInitialSelections() {
+export function getInitialSelections(firstName, lastInitial) {
+    const firstNameLastInitial = `${firstName}_${lastInitial}`;
+
     const sql = `
-    select 
-    from 
+    SELECT 
+        ${USER_RESPONSES_TABLE_FIELDS.time_zone},
+        ${USER_RESPONSES_TABLE_FIELDS.start_time},
+        ${USER_RESPONSES_TABLE_FIELDS.end_time},
+        ${USER_RESPONSES_TABLE_FIELDS.start_location},
+        ${USER_RESPONSES_TABLE_FIELDS.end_location}
+    FROM ${USER_RESPONSES_TABLE}
+    WHERE ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} = '${firstNameLastInitial}'
     `;
+
+    const stmt = db.prepare(sql);
+    const rows = stmt.all();
+    console.log("FETCHED ROWS:");
+    console.log(rows);
+    return rows;
 }
