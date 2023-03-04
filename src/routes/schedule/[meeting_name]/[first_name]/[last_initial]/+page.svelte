@@ -2,8 +2,17 @@
 	import Modal from "../../../../../lib/components/Modal.svelte";
 	let columns = new Array(7)
 	let rows = new Array(20)
-	let state = new Array(rows.length*columns.length).fill(false)
+	// let state = new Array(rows.length*columns.length).fill(false)
+	let state = []
+	for (let r = 0; r < rows.length; r++) {
+		let arr = []
+		for (let c = 0; c < columns.length; c++) {
+			arr.push(false);
+		}
+		state.push(arr)
+	}
 	let isDrag = false
+	let firstSelectedSlotPos = null
 	let nextForm = false
 	
 	let child;
@@ -16,15 +25,38 @@
 	
 	const endDrag = () => {
 		isDrag = false
+		firstSelectedSlotPos = null
 	}
 	
 	const toggle = (r, c) => {
-		state[r*columns.length+c] = !state[r*columns.length+c]
+		state[r][c] = !state[r][c]
 	}
 	
 	const mouseHandler = (r, c) => (e) => {
-		if (isDrag || e.type === 'mousedown') {
-			toggle(r, c)
+		if (e.type === 'mousedown') {
+			if (firstSelectedSlotPos == null) {
+				firstSelectedSlotPos = [r, c]
+				console.log(firstSelectedSlotPos)
+				toggle(r,c)
+			}
+		}
+		if (isDrag && firstSelectedSlotPos !== null) {
+			// If this is the start of a new drag
+			let first_x = firstSelectedSlotPos[0]
+			let first_y = firstSelectedSlotPos[1]
+			let current_x = r
+			let current_y = c
+
+			let min_x = Math.min(first_x, current_x)
+			let max_x = Math.max(first_x, current_x)
+			let min_y = Math.min(first_y, current_y)
+			let max_y = Math.max(first_y, current_y)
+
+			for(let i = min_x; i < max_x + 1; i++) {
+				for (let j = min_y; j < max_y + 1; j++) {
+					state[i][j] = state[first_x][first_y]
+				}
+			}
 		}
 	}
 
@@ -77,7 +109,7 @@
 		{#each rows as _row, r}
 			<tr >
 				{#each columns as _column, c}
-					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} class:selected="{state[r*columns.length+c]}"></td>
+					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} class:selected="{state[r][c]}"></td>
 				{/each}
 			</tr>
 		{/each}
