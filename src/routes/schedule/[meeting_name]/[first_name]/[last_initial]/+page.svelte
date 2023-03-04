@@ -123,13 +123,13 @@
 	<Modal bind:this={child} on:show={e => child.shown = e.detail} on:show={()=>nextForm=false}>
 	<form class="locform" on:submit|preventDefault={saveSelection}>
 	<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
-		<label for="startloc">Where will you start?</label>
-		<input type="text" id="startloc" name="startloc">
+		<label for="start_location">Where will you start?</label>
+		<input type="text" id="start_location" name="start_location">
 		<button on:click={()=>nextForm=!nextForm}>Next</button>
 	</fieldset>
 	<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
-		<label for="startloc">Where will you end?</label>
-		<input type="text" id="startloc" name="startloc">
+		<label for="end_location">Where will you end?</label>
+		<input type="text" id="end_location" name="end_location">
 		<button type="submit" on:click={child.show}>Submit</button>
 	</fieldset>
 	</form>
