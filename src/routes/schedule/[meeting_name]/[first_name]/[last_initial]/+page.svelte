@@ -8,8 +8,6 @@
 	let columns = new Array(7);
 	let rows = new Array(20);
 
-	// TODO: Account for a slot being included in a new block (selected or unselected)
-
 	// 2D Array, each containing a map like:
 	/*
 		{
@@ -18,15 +16,10 @@
 			end_location string
 		}
 	*/
-	let state_new = [];
-
-	// let state = [];
-	let locations = [];
+	let selection_state = [];
 
 	for (let r = 0; r < rows.length; r++) {
 		let new_state_arr = [];
-		// let state_arr = [];
-		let locations_arr = [];
 		for (let c = 0; c < columns.length; c++) {
 			// TODO: Update to empty strings for start & end location
 			new_state_arr.push({
@@ -34,12 +27,8 @@
 				start_location: 'test',
 				end_location: 'test',
 			});
-			// state_arr.push(false);
-			locations_arr.push(null);
 		}
-		// state.push(state_arr);
-		locations.push(locations_arr);
-		state_new.push(new_state_arr);
+		selection_state.push(new_state_arr);
 	}
 
 	let isDrag = false;
@@ -62,8 +51,7 @@
 	}
 	
 	const toggle = (r, c) => {
-		// state[r][c] = !state[r][c];
-		state_new[r][c].selected = !state_new[r][c].selected;
+		selection_state[r][c].selected = !selection_state[r][c].selected;
 	}
 	
 	// TODO: Handle backwards drag
@@ -72,9 +60,6 @@
 		if (e.type === 'mousedown') {
 			if (firstSelectedSlotPos == null) {
 				firstSelectedSlotPos = [r, c];
-
-				// selectedBlockBounds[0] = [r, r];
-				// selectedBlockBounds[1] = [c, c];
 
 				toggle(r,c);
 			}
@@ -96,8 +81,7 @@
 
 			for (let i = min_x; i < max_x + 1; i++) {
 				for (let j = min_y; j < max_y + 1; j++) {
-					// state[i][j] = state[first_x][first_y];
-					state_new[i][j].selected = state_new[first_x][first_y].selected;
+					selection_state[i][j].selected = selection_state[first_x][first_y].selected;
 				}
 			}
 		}
@@ -121,7 +105,7 @@
 
 		for (let r = 0; r < rows.length; r++) {
 			for (let c = 0; c < columns.length; c++) {
-				const slot = state_new[r][c]
+				const slot = selection_state[r][c]
 				if (slot.selected == true) {
 					let selection = {
 						row: r,
@@ -183,7 +167,7 @@
 		{#each rows as _row, r}
 			<tr >
 				{#each columns as _column, c}
-					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} class:selected="{state_new[r][c].selected}"></td>
+					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} class:selected="{selection_state[r][c].selected}"></td>
 				{/each}
 			</tr>
 		{/each}
