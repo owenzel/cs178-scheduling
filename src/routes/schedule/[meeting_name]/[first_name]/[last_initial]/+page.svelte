@@ -11,7 +11,7 @@
 	let columns = new Array(7);
 	let rows = new Array(20);
 
-	// 2D Array, each containing a map like:
+	// Initialize 2D array for state, each containing a map like:
 	/*
 		{
 			selected: bool,
@@ -22,16 +22,29 @@
 	let selection_state = [];
 
 	for (let r = 0; r < rows.length; r++) {
-		let new_state_arr = [];
+		let selection_state_col = [];
 		for (let c = 0; c < columns.length; c++) {
 			// TODO: Update to empty strings for start & end location
-			new_state_arr.push({
+			selection_state_col.push({
 				selected: false,
 				start_location: 'test',
 				end_location: 'test',
 			});
 		}
-		selection_state.push(new_state_arr);
+		selection_state.push(selection_state_col);
+	}
+
+	// Update the state array with the fetched selections:
+	for (let i = 0; i < data.initialSelections.length; i++) {
+		const initialSelection = data.initialSelections[i];
+		const row = initialSelection.row;
+		const col = initialSelection.column;
+		const startLocation = initialSelection.start_location;
+		const endLocation = initialSelection.end_location;
+
+		selection_state[row][col].selected = true;
+		selection_state[row][col].start_location = startLocation;
+		selection_state[row][col].end_location = endLocation;
 	}
 
 	let isDrag = false;
