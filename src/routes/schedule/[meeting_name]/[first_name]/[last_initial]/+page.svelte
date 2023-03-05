@@ -218,13 +218,8 @@
 			// TODO: Handle success/failure - show pop up?
 			await response.json();
 		} catch (e) {
-      console.log(e);
-		}
-	}
 
-	// TODO: Implement
-	function handleExportToCSV() {
-		console.log("Export to CSV...");
+		}
 	}
 
 </script>
