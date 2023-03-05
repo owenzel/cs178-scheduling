@@ -157,7 +157,13 @@
 			}
 		});
 
+		// TODO: Handle success/failure - show pop up?
 		await response.json();
+	}
+
+	// TODO: Implement
+	function handleExportToCSV() {
+		console.log("Export to CSV...");
 	}
 
 </script>
@@ -183,7 +189,8 @@
 </style>
 
 <!-- TODO: Add column headers: days of week -->
-<a href="/">Log Out</a>
+<Button href="/">Log Out</Button>
+<Button on:click={handleExportToCSV}>Export All Results to CSV</Button>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
 	<h1>My Event</h1>
