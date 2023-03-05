@@ -30,6 +30,15 @@ const USER_RESPONSES_TABLE_FIELDS = {
     start_location: 'start_location',
     end_location: 'end_location',
 };
+// User time logs table constants
+const USER_TIMING_TABLE = 'user_timing';
+const USER_TIMING_TABLE_FIELDS = {
+    id: 'id',
+    first_name_last_initial: 'first_name_last_initial',
+    start_time: 'start_time',
+    end_time: 'end_time',
+    time_elapsed_sec: 'time_elapsed_sec'
+}
 
 const db = new Database(DB_PATH, { verbose: console.log });
 
@@ -54,7 +63,15 @@ CREATE TABLE IF NOT EXISTS ${USER_RESPONSES_TABLE} (
     ${USER_RESPONSES_TABLE_FIELDS.start_location} TEXT NOT NULL,
     ${USER_RESPONSES_TABLE_FIELDS.end_location} TEXT NOT NULL,
     FOREIGN KEY (${USER_RESPONSES_TABLE_FIELDS.meeting_id}) REFERENCES ${MEETINGS_TABLE}(${MEETINGS_TABLE_FIELDS.id})
-    );
+);
+
+CREATE TABLE IF NOT EXISTS ${USER_TIMING_TABLE} (
+    ${USER_TIMING_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
+    ${USER_TIMING_TABLE_FIELDS.first_name_last_initial} TEXT NOT NULL,
+    ${USER_TIMING_TABLE_FIELDS.start_time} INTEGER,
+    ${USER_TIMING_TABLE_FIELDS.end_time} INTEGER,
+    ${USER_TIMING_TABLE_FIELDS.time_elapsed_sec} INTEGER
+);
 `;
 
 db.exec(sqlCreateTables);
@@ -92,7 +109,7 @@ export function getInitialSelections(firstName, lastInitial) {
     return rows;
 }
 
-export function putSelections(selections) {
+export function updateSelections(selections) {
     // TODO: Update from hard coded value (if add support for time zones)
     const TIME_ZONE = 'EST';
 
@@ -137,4 +154,42 @@ export function putSelections(selections) {
 
     // TODO: Handle success/failure
     db.exec(sql);
+}
+
+export function updateUserTiming(log) {
+    const { first_name, last_initial, start_time, end_time, time_elapsed_sec } = log;
+
+    const firstNameLastInitial = `${first_name}_${last_initial}`;
+
+    let sql = ``;
+
+    // Delete the existing time record
+    sql += `
+    DELETE FROM ${USER_TIMING_TABLE} WHERE ${USER_TIMING_TABLE_FIELDS.first_name_last_initial} = '${firstNameLastInitial}';
+    
+    `;
+
+    sql += `
+        INSERT INTO ${USER_TIMING_TABLE} (
+            ${USER_TIMING_TABLE_FIELDS.first_name_last_initial},
+            ${USER_TIMING_TABLE_FIELDS.start_time},
+            ${USER_TIMING_TABLE_FIELDS.end_time},
+            ${USER_TIMING_TABLE_FIELDS.time_elapsed_sec}
+        ) VALUES (
+            '${firstNameLastInitial}',
+            ${start_time},
+            ${end_time},
+            ${time_elapsed_sec}
+        );
+    `;
+
+    // TODO: Handle success/failure
+    db.exec(sql);
+}
+
+export function getAllUserTiming() {
+    let sql = `SELECT * FROM ${USER_TIMING_TABLE}`;
+    const stmt = db.prepare(sql);
+    const rows = stmt.all();
+    return rows;
 }
