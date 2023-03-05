@@ -11,6 +11,9 @@
 	let columns = new Array(7);
 	let rows = new Array(20);
 
+	// Cannot save until at least one new selection was made
+	let newSelectionWasMade = false;
+
 	// Initialize 2D array for state, each containing a map like:
 	/*
 		{
@@ -67,6 +70,7 @@
 	}
 	
 	const toggle = (r, c) => {
+		newSelectionWasMade = true;
 		selection_state[r][c].selected = !selection_state[r][c].selected;
 	}
 	
@@ -117,7 +121,11 @@
 	}
 
 	async function saveSelections() {
-		let selections = [];
+		// First "selection" is just first name & last initial
+		let selections = [{
+			first_name: `${data.first_name}`,
+			last_initial: `${data.last_initial}`
+		}];
 
 		// Add data items for the other selections
 		for (let r = 0; r < rows.length; r++) {
@@ -125,8 +133,6 @@
 				const slot = selection_state[r][c]
 				if (slot.selected == true) {
 					let selection = {
-						first_name: `${data.first_name}`,
-						last_initial: `${data.last_initial}`,
 						row: r,
 						column: c,
 						start_location: slot.start_location,
@@ -211,7 +217,7 @@
 	</fieldset>
 	</form>
 	</Modal>
-	<button on:click={saveSelections}>
+	<button on:click={saveSelections} disabled={!newSelectionWasMade}>
 		Save my selections!
 	</button>
 </div>

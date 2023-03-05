@@ -98,10 +98,20 @@ export function putSelections(selections) {
 
     let sql = ``;
 
-    // Append all selections to sql statement
-    for (let i = 0; i < selections.length; i++) {
+    // First item is just object with first name and last initial
+    const firstItem = selections[0];
+    const firstNameLastInitial = `${firstItem.first_name}_${firstItem.last_initial}`;
+
+    // Remove original selections
+    sql += `
+    DELETE FROM ${USER_RESPONSES_TABLE} WHERE ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} = '${firstNameLastInitial}';
+    
+    `;
+
+    // Insert latest selections
+    // Index from 1 b/c the first item is just the first name & last initial; others are actual selections
+    for (let i = 1; i < selections.length; i++) {
         const selection = selections[i];
-        const firstNameLastInitial = `${selection.first_name}_${selection.last_initial}`;
 
         sql += `
         INSERT INTO ${USER_RESPONSES_TABLE} (
