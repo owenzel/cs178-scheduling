@@ -17,7 +17,7 @@
 
 	let columns = new Array(7);
 	let rows = new Array(20);
-
+	let unlabeled;
 	// Cannot save until at least one new selection was made
 	let newSelectionWasMade = false;
 
@@ -89,6 +89,7 @@
 
 				toggle(r,c);
 			}
+			child.show();
 		}
 		if (isDrag && firstSelectedSlotPos !== null) {
 			// If this is the start of a new drag
@@ -102,6 +103,7 @@
 			let min_y = Math.min(first_y, current_y);
 			let max_y = Math.max(first_y, current_y);
 
+			unlabeled = [min_x, max_x, min_y, max_y];
 			selectedBlockBounds[0] = [min_x, max_x];
 			selectedBlockBounds[1] = [min_y, max_y];
 
@@ -115,6 +117,7 @@
 
 	// TODO: Update
 	function saveLocation (e) {
+		child.show();
 		const formData = new FormData(e.target);
 		const data = {};
 		for (let field of formData) {
@@ -122,7 +125,12 @@
 			data[key] = value;
 		}
 		console.log(data);
-		submissions.push(data);
+		for (let i = unlabeled[0]; i < unlabeled[1] + 1; i++) {
+			for (let j = unlabeled[2]; j < unlabeled[3] + 1; j++) {
+				selection_state[i][j].start_location = data["start_location"];
+				selection_state[i][j].end_location = data["end_location"];
+			}
+		}
 	}
 
 	async function saveSelections() {
@@ -211,26 +219,23 @@
 			</tr>
 		{/each}
 	</table>
-	<button on:click={child.show}>
-		Show
-	</button>
 	<!-- Modal Forms -->
 	<!-- TODO: Fix end location not submitting -->
 	<Modal bind:this={child} on:show={e => child.shown = e.detail} on:show={()=>nextForm=false}>
-	<form class="locform" on:submit|preventDefault={saveLocation}>
+	<form class="locform" on:submit={saveLocation}>
 	<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
 		<label for="start_location">Where will you start?</label>
 		<input type="text" id="start_location" name="start_location">
-		<button on:click={()=>nextForm=!nextForm}>Next</button>
+		<button type="button" on:click={()=>nextForm=!nextForm}>Next</button>
 	</fieldset>
 	<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
 		<label for="end_location">Where will you end?</label>
 		<input type="text" id="end_location" name="end_location">
-		<button type="submit" on:click={child.show}>Submit</button>
+		<button type="submit">Submit</button>
 	</fieldset>
 	</form>
 	</Modal>
-	<button on:click={saveSelections} disabled={!newSelectionWasMade}>
+	<button type="button" on:click={saveSelections} disabled={!newSelectionWasMade}>
 		Save my selections!
 	</button>
 </div>
