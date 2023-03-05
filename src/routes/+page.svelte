@@ -11,6 +11,7 @@
 		  name="firstName"
 		  id="firstName"
 		  placeholder="First Name"
+		  required
 		/>
 	</FormGroup>
 	<FormGroup>
@@ -19,6 +20,7 @@
 		  name="lastInitial"
 		  id="lastInitial"
 		  placeholder="Last Initial"
+		  required
 		/>
 	</FormGroup>
 	<Button color='primary' type='submit'>Sign In</Button>

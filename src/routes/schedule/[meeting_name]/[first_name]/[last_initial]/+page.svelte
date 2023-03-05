@@ -1,12 +1,16 @@
 <script>
+	// TODO: Location form should be associated with a slot
+	// TODO: Location should appear in some kind of legend on the side?
+	// TODO: Save & properly retrieve location (persistent storage)
 	// TODO: Save selections to csv that we can export
-	// TODO: Add log out button
-	// TODO: Add option for virtual location
+	// TODO: Add option for virtual location to location form
 	// TODO: Add success/error message to let user know that data was saved properly
+	// TODO: Update styling to be consistent (use Bootstrap?)
 	// TODO: Add time zone (IF TIME)
 
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
+	import { Button } from "sveltestrap";
 
 	// Access the loaded data
 	export let data;
@@ -179,6 +183,7 @@
 </style>
 
 <!-- TODO: Add column headers: days of week -->
+<a href="/">Log Out</a>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
 	<h1>My Event</h1>
