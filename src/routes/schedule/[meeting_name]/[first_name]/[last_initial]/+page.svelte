@@ -5,11 +5,10 @@
 	// TODO: Location should appear in some kind of legend on the side?
 	// TODO: Save & properly retrieve location (persistent storage)
 	// TODO (tentative): Add option for virtual location to location form
-	// TODO: Add success/error message to let user know that data was saved properly
-	// TODO: Add success/error message to let user know that csv was written to
 	// TODO: Add time zone (IF TIME)
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
+	import ResponseAlert from "../../../../../lib/components/ResponseAlert.svelte";
 	import { Navbar, Button } from "sveltestrap";
 
 	// Access the loaded data
@@ -66,6 +65,10 @@
 	let nextForm = false;
 	
 	let locationModal;
+	let alertColor = '';
+	let alertMessage = '';
+	let enableAlert = false;
+
 	let times = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30', '5:00', '5:30', '6:00', '6:30', '7:00'];
 	
 	const beginDrag = () => {
@@ -75,8 +78,6 @@
 	const endDrag = () => {
 		isDrag = false;
 		firstSelectedSlotPos = null;
-		
-		// TODO: Open location form & associate it with the given block
 	}
 	
 	const toggle = (r, c) => {
@@ -85,7 +86,6 @@
 	}
 	
 	const mouseHandler = (r, c) => (e) => {
-		console.log('mouse handler');
 		if (e.type === 'mousedown') {
 			if (firstSelectedSlotPos == null) {
 				firstSelectedSlotPos = [r, c];
@@ -157,7 +157,7 @@
 				}
 			});
 
-			// TODO: Handle success/failure - show pop up?
+			// TODO: Handle success/failure
 			await response.json();
 	}
 
@@ -196,29 +196,33 @@
 				}
 			});
 
-			// TODO: Handle success/failure - show pop up?
 			await response.json();
+			showAlert('success', 'Results were successfully saved!');
 
 		} catch (e) {
 			console.log(e);
-			// TODO: Handle error
+			showAlert('danger', `There was an error saving your selections: ${e}`);
 		}
 	}
 
-	// TODO: Implement
 	async function handleExportToCSV() {
-		console.log("Export to CSV...");
-
 		try {
 			const response = await fetch('/api/csv-export', {
 				method: 'POST',
 			});
 
-			// TODO: Handle success/failure - show pop up?
 			await response.json();
-		} catch (e) {
 
+			showAlert('success', 'Results were successfully written to the CSV!');
+		} catch (e) {
+			showAlert('danger', `There was an error writing the results to the CSV: ${e}`);
 		}
+	}
+
+	function showAlert(color, message) {
+		alertColor = color;
+		alertMessage = message;
+		enableAlert = true;
 	}
 
 </script>
@@ -250,9 +254,13 @@
 		<Button on:click={saveSelections} disabled={!newSelectionWasMade} color='success' class="mx-3">
 			Save My Selections
 		</Button>
-		<Button on:click={handleExportToCSV}>Export All Results to CSV</Button>
+		<Button on:click={handleExportToCSV}>[ADMIN ONLY] Export All Results to CSV</Button>
 	</div>
 </Navbar>
+
+<!-- Alerts -->
+<ResponseAlert hidden={!enableAlert} color={alertColor} message={alertMessage} />
+
 <h5 class="instructions">Select the times when you are NOT available.</h5>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
@@ -272,19 +280,20 @@
 			</tr>
 		{/each}
 	</table>
+
 	<!-- Modal Forms -->
 	<Modal bind:this={locationModal} on:show={e => locationModal.shown = e.detail} on:show={()=>nextForm=false}>
-	<form class="locform" on:submit={saveLocation}>
-	<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
-		<label for="start_location">Where will you be at the START of this time block?</label>
-		<input type="text" id="start_location" name="start_location">
-		<Button type="button" on:click={()=>nextForm=!nextForm} color="light">Next</Button>
-	</fieldset>
-	<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
-		<label for="end_location">Where will you be at the END of this time block?</label>
-		<input type="text" id="end_location" name="end_location">
-		<Button type="submit" color="light">Submit</Button>
-	</fieldset>
-	</form>
+		<form class="locform" on:submit={saveLocation}>
+		<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
+			<label for="start_location">Where will you be at the START of this time block?</label>
+			<input type="text" id="start_location" name="start_location">
+			<Button type="button" on:click={()=>nextForm=!nextForm} color="light">Next</Button>
+		</fieldset>
+		<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
+			<label for="end_location">Where will you be at the END of this time block?</label>
+			<input type="text" id="end_location" name="end_location">
+			<Button type="submit" color="light">Submit</Button>
+		</fieldset>
+		</form>
 	</Modal>
 </div>
