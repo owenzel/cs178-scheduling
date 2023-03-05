@@ -5,6 +5,9 @@
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
 
+	// Access the loaded data
+	export let data;
+
 	let columns = new Array(7);
 	let rows = new Array(20);
 
@@ -103,11 +106,14 @@
 	async function saveSelections() {
 		let selections = [];
 
+		// Add data items for the other selections
 		for (let r = 0; r < rows.length; r++) {
 			for (let c = 0; c < columns.length; c++) {
 				const slot = selection_state[r][c]
 				if (slot.selected == true) {
 					let selection = {
+						first_name: `${data.first_name}`,
+						last_initial: `${data.last_initial}`,
 						row: r,
 						column: c,
 						start_location: slot.start_location,
@@ -152,6 +158,7 @@
 	}
 </style>
 
+<!-- TODO: Add column headers: days of week -->
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
 	<h1>My Event</h1>

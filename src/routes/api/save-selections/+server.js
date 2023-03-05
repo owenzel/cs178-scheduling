@@ -1,10 +1,16 @@
+import { putSelections } from "../../../lib/server/db";
+
 export async function POST({ request }) {
-    // putSelections(params.first_name, params.last_initial, data.selections);
 
-    console.log('hit!');
+    try {
+        const data = await request.json();
+        putSelections(data);
 
-    const data = await request.json();
-    console.log(data);
+        return new Response(JSON.stringify({ "message": "Success!" }));
+    } catch (e) {
+        console.log(e);
 
-    return new Response(JSON.stringify({"test": "hi"}));
+        return new Response(JSON.stringify({ "message": "Error!" }));
+    }
+    
 }

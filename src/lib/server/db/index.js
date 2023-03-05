@@ -59,7 +59,7 @@ CREATE TABLE IF NOT EXISTS ${USER_RESPONSES_TABLE} (
 
 db.exec(sqlCreateTables);
 
-const sqlTestTables = `SELECT * FROM ${MEETINGS_TABLE} LIMIT 1`;
+const sqlTestTables = `SELECT * FROM ${MEETINGS_TABLE} LIMIT 1;`;
 const testTablesStmt = db.prepare(sqlTestTables);
 const testTablesRows = testTablesStmt.all();
 
@@ -82,41 +82,48 @@ export function getInitialSelections(firstName, lastInitial) {
         ${USER_RESPONSES_TABLE_FIELDS.start_location},
         ${USER_RESPONSES_TABLE_FIELDS.end_location}
     FROM ${USER_RESPONSES_TABLE}
-    WHERE ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} = '${firstNameLastInitial}'
+    WHERE ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} = '${firstNameLastInitial}';
     `;
 
     const stmt = db.prepare(sql);
     const rows = stmt.all();
-    console.log("FETCHED ROWS:");
+    console.log("FETCHED SELECTIONS:");
     console.log(rows);
     return rows;
 }
 
-export function putSelections(firstName, lastInitial, selection) {
-    const firstNameLastInitial = `${firstName}_${lastInitial}`;
+export function putSelections(selections) {
+    // TODO: Update from hard coded value (if add support for time zones)
     const TIME_ZONE = 'EST';
 
-    const sql = `
-    INSERT INTO ${USER_RESPONSES_TABLE} (
-        ${USER_RESPONSES_TABLE_FIELDS.meeting_id},
-        ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial},
-        ${USER_RESPONSES_TABLE_FIELDS.time_zone},
-        ${USER_RESPONSES_TABLE_FIELDS.row},
-        ${USER_RESPONSES_TABLE_FIELDS.column},
-        ${USER_RESPONSES_TABLE_FIELDS.start_location},
-        ${USER_RESPONSES_TABLE_FIELDS.end_location},
-    )
-    VALUES
-    (
-        ${MAIN_MEETING.id},
-        '${firstNameLastInitial}',
-        '${TIME_ZONE}',
-        '${selection.row}',
-        '${selection.column}',
-        '${selection.start_location}',
-        '${selection.end_location}',
-    )
-    `;
+    let sql = ``;
+
+    // Append all selections to sql statement
+    for (let i = 0; i < selections.length; i++) {
+        const selection = selections[i];
+        const firstNameLastInitial = `${selection.first_name}_${selection.last_initial}`;
+
+        sql += `
+        INSERT INTO ${USER_RESPONSES_TABLE} (
+            ${USER_RESPONSES_TABLE_FIELDS.meeting_id},
+            ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial},
+            ${USER_RESPONSES_TABLE_FIELDS.time_zone},
+            ${USER_RESPONSES_TABLE_FIELDS.row},
+            ${USER_RESPONSES_TABLE_FIELDS.column},
+            ${USER_RESPONSES_TABLE_FIELDS.start_location},
+            ${USER_RESPONSES_TABLE_FIELDS.end_location}
+        ) VALUES (
+            ${MAIN_MEETING.id},
+            '${firstNameLastInitial}',
+            '${TIME_ZONE}',
+            ${selection.row},
+            ${selection.column},
+            '${selection.start_location}',
+            '${selection.end_location}'
+        );
+
+        `;
+    }
 
     // TODO: Handle success/failure
     db.exec(sql);
