@@ -1,6 +1,9 @@
 <script>
-	// TODO: Handle fetched selections
-	// TODO: Add time zone
+	// TODO: Save selections to csv that we can export
+	// TODO: Add log out button
+	// TODO: Add option for virtual location
+	// TODO: Add success/error message to let user know that data was saved properly
+	// TODO: Add time zone (IF TIME)
 
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
@@ -74,7 +77,6 @@
 		selection_state[r][c].selected = !selection_state[r][c].selected;
 	}
 	
-	// TODO: Handle backwards drag
 	const mouseHandler = (r, c) => (e) => {
 		console.log('mouse handler');
 		if (e.type === 'mousedown') {
@@ -108,7 +110,6 @@
 	}
 
 	// TODO: Update
-	// TODO: Call database function; handle error
 	function saveLocation (e) {
 		const formData = new FormData(e.target);
 		const data = {};
