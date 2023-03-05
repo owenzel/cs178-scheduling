@@ -1,13 +1,14 @@
 <script>
+	// TODO: Label concepts
+	// TODO: Unselect
 	// TODO: Location form should be associated with a slot
 	// TODO: Location should appear in some kind of legend on the side?
 	// TODO: Save & properly retrieve location (persistent storage)
-	// TODO: Save selections to csv that we can export
 	// TODO: Add option for virtual location to location form
 	// TODO: Add success/error message to let user know that data was saved properly
+	// TODO: Add success/error message to let user know that csv was written to
 	// TODO: Update styling to be consistent (use Bootstrap?)
 	// TODO: Add time zone (IF TIME)
-
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
 	import { Button } from "sveltestrap";
@@ -17,6 +18,8 @@
 
 	let columns = new Array(7);
 	let rows = new Array(20);
+
+	const initialUserTime = Date.now();
 
 	// Cannot save until at least one new selection was made
 	let newSelectionWasMade = false;
@@ -125,39 +128,89 @@
 		submissions.push(data);
 	}
 
+	async function logUserTime() {
+		// Calculate the time the user spent entering input
+		const finalUserTime = Date.now();
+		const timeElapsedMs = finalUserTime - initialUserTime;
+		const timeElapsedSec = timeElapsedMs / 1000;
+
+		// Log the elapsed time
+		const response = await fetch('/api/log-user-time', {
+				method: 'POST',
+				body: JSON.stringify({
+					first_name: `${data.first_name}`,
+					last_initial: `${data.last_initial}`,
+					start_time: initialUserTime / 1000, // epoch time in sec
+					end_time: finalUserTime / 1000, // epoch time in sec
+					time_elapsed_sec: timeElapsedSec
+				}),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+
+			// TODO: Handle success/failure - show pop up?
+			await response.json();
+	}
+
 	async function saveSelections() {
-		// First "selection" is just first name & last initial
-		let selections = [{
-			first_name: `${data.first_name}`,
-			last_initial: `${data.last_initial}`
-		}];
+		try {
+			await logUserTime();
 
-		// Add data items for the other selections
-		for (let r = 0; r < rows.length; r++) {
-			for (let c = 0; c < columns.length; c++) {
-				const slot = selection_state[r][c]
-				if (slot.selected == true) {
-					let selection = {
-						row: r,
-						column: c,
-						start_location: slot.start_location,
-						end_location: slot.end_location,
+			// First "selection" is just first name & last initial
+			let selections = [{
+				first_name: `${data.first_name}`,
+				last_initial: `${data.last_initial}`
+			}];
+
+			// Add data items for the other selections
+			for (let r = 0; r < rows.length; r++) {
+				for (let c = 0; c < columns.length; c++) {
+					const slot = selection_state[r][c]
+					if (slot.selected == true) {
+						let selection = {
+							row: r,
+							column: c,
+							start_location: slot.start_location,
+							end_location: slot.end_location,
+						}
+
+						selections.push(selection);
 					}
-
-					selections.push(selection);
 				}
 			}
+
+			const response = await fetch('/api/save-selections', {
+				method: 'POST',
+				body: JSON.stringify(selections),
+				headers: {
+					'content-type': 'application/json'
+				}
+			});
+
+			// TODO: Handle success/failure - show pop up?
+			await response.json();
+
+		} catch (e) {
+			console.log(e);
+			// TODO: Handle error
 		}
+	}
 
-		const response = await fetch('/api/save-selections', {
-			method: 'POST',
-			body: JSON.stringify(selections),
-			headers: {
-				'content-type': 'application/json'
-			}
-		});
+	// TODO: Implement
+	async function handleExportToCSV() {
+		console.log("Export to CSV...");
 
-		await response.json();
+		try {
+			const response = await fetch('/api/csv-export', {
+				method: 'POST',
+			});
+
+			// TODO: Handle success/failure - show pop up?
+			await response.json();
+		} catch (e) {
+
+		}
 	}
 
 </script>
@@ -183,7 +236,8 @@
 </style>
 
 <!-- TODO: Add column headers: days of week -->
-<a href="/">Log Out</a>
+<Button href="/">Log Out</Button>
+<Button on:click={handleExportToCSV}>Export All Results to CSV</Button>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
 	<h1>My Event</h1>
