@@ -20,7 +20,7 @@ export async function POST() {
             }
         });
 
-        return new Response();
+        return new Response(JSON.stringify({ "message": "Success!" }));
     } catch (e) {
         console.log(e);
 
