@@ -5,7 +5,7 @@ import { DB_PATH } from '$env/static/private';
 Database constants
 */
 export const MAIN_MEETING = {
-    id: 'cs178',
+    id: '1',
     name: 'CS178'
 };
 // Meetings table constants
@@ -25,8 +25,8 @@ const USER_RESPONSES_TABLE_FIELDS = {
     meeting_id: 'meeting_id',
     first_name_last_initial: 'first_name_last_initial',
     time_zone: 'time_zone',
-    start_time: 'start_time',
-    end_time: 'end_time',
+    row: 'row',
+    column: 'column',
     start_location: 'start_location',
     end_location: 'end_location',
 };
@@ -34,32 +34,42 @@ const USER_RESPONSES_TABLE_FIELDS = {
 const db = new Database(DB_PATH, { verbose: console.log });
 
 // Initialize the database: create a meetings and user responses table and insert a starter meeting (for the competition)
-const sqlInitDb = `
-    CREATE TABLE IF NOT EXISTS ${MEETINGS_TABLE} (
-        ${MEETINGS_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
-        ${MEETINGS_TABLE_FIELDS.name} TEXT NOT NULL,
-        ${MEETINGS_TABLE_FIELDS.start_time} INTEGER,
-        ${MEETINGS_TABLE_FIELDS.end_time} INTEGER,
-        ${MEETINGS_TABLE_FIELDS.time_zone} TEXT,
-        ${MEETINGS_TABLE_FIELDS.deadline} INTEGER
-    );
+const sqlCreateTables = `
+CREATE TABLE IF NOT EXISTS ${MEETINGS_TABLE} (
+    ${MEETINGS_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
+    ${MEETINGS_TABLE_FIELDS.name} TEXT NOT NULL,
+    ${MEETINGS_TABLE_FIELDS.start_time} INTEGER,
+    ${MEETINGS_TABLE_FIELDS.end_time} INTEGER,
+    ${MEETINGS_TABLE_FIELDS.time_zone} TEXT,
+    ${MEETINGS_TABLE_FIELDS.deadline} INTEGER
+);
 
-    CREATE TABLE IF NOT EXISTS ${USER_RESPONSES_TABLE} (
-        ${USER_RESPONSES_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
-        ${USER_RESPONSES_TABLE_FIELDS.meeting_id} INTEGER NOT NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} TEXT NOT NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.time_zone} TEXT NOT NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.start_time} INTEGER NOT NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.end_time} INTEGER_NOT_NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.start_location} TEXT NOT NULL,
-        ${USER_RESPONSES_TABLE_FIELDS.end_location} TEXT NOT NULL,
-        FOREIGN KEY (${USER_RESPONSES_TABLE_FIELDS.meeting_id}) REFERENCES ${MEETINGS_TABLE}(${MEETINGS_TABLE_FIELDS.id})
+CREATE TABLE IF NOT EXISTS ${USER_RESPONSES_TABLE} (
+    ${USER_RESPONSES_TABLE_FIELDS.id} INTEGER PRIMARY KEY,
+    ${USER_RESPONSES_TABLE_FIELDS.meeting_id} INTEGER NOT NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial} TEXT NOT NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.time_zone} TEXT NOT NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.row} INTEGER NOT NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.column} INTEGER_NOT_NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.start_location} TEXT NOT NULL,
+    ${USER_RESPONSES_TABLE_FIELDS.end_location} TEXT NOT NULL,
+    FOREIGN KEY (${USER_RESPONSES_TABLE_FIELDS.meeting_id}) REFERENCES ${MEETINGS_TABLE}(${MEETINGS_TABLE_FIELDS.id})
     );
-
-    INSERT INTO ${MEETINGS_TABLE} (${MEETINGS_TABLE_FIELDS.id}, ${MEETINGS_TABLE_FIELDS.name}) VALUES ('${MAIN_MEETING.id}', '${MAIN_MEETING.name}');
 `;
 
-db.exec(sqlInitDb);
+db.exec(sqlCreateTables);
+
+const sqlTestTables = `SELECT * FROM ${MEETINGS_TABLE} LIMIT 1`;
+const testTablesStmt = db.prepare(sqlTestTables);
+const testTablesRows = testTablesStmt.all();
+
+if (testTablesRows.length == 0) {
+    const sqlInsertStarterMeeting = `
+        INSERT INTO ${MEETINGS_TABLE} (${MEETINGS_TABLE_FIELDS.id}, ${MEETINGS_TABLE_FIELDS.name}) VALUES (${MAIN_MEETING.id}, '${MAIN_MEETING.name}');
+    `;
+
+    db.exec(sqlInsertStarterMeeting);
+}
 
 export function getInitialSelections(firstName, lastInitial) {
     const firstNameLastInitial = `${firstName}_${lastInitial}`;
@@ -67,8 +77,8 @@ export function getInitialSelections(firstName, lastInitial) {
     const sql = `
     SELECT 
         ${USER_RESPONSES_TABLE_FIELDS.time_zone},
-        ${USER_RESPONSES_TABLE_FIELDS.start_time},
-        ${USER_RESPONSES_TABLE_FIELDS.end_time},
+        ${USER_RESPONSES_TABLE_FIELDS.row},
+        ${USER_RESPONSES_TABLE_FIELDS.column},
         ${USER_RESPONSES_TABLE_FIELDS.start_location},
         ${USER_RESPONSES_TABLE_FIELDS.end_location}
     FROM ${USER_RESPONSES_TABLE}
@@ -82,34 +92,32 @@ export function getInitialSelections(firstName, lastInitial) {
     return rows;
 }
 
-export function saveSelections(firstName, lastInitial, selection) {
+export function putSelections(firstName, lastInitial, selection) {
     const firstNameLastInitial = `${firstName}_${lastInitial}`;
     const TIME_ZONE = 'EST';
-
-    // INSERT INTO ${MEETINGS_TABLE} (${MEETINGS_TABLE_FIELDS.name}) VALUES ('${MAIN_MEETING.name}');
 
     const sql = `
     INSERT INTO ${USER_RESPONSES_TABLE} (
         ${USER_RESPONSES_TABLE_FIELDS.meeting_id},
         ${USER_RESPONSES_TABLE_FIELDS.first_name_last_initial},
         ${USER_RESPONSES_TABLE_FIELDS.time_zone},
-        ${USER_RESPONSES_TABLE_FIELDS.start_time},
-        ${USER_RESPONSES_TABLE_FIELDS.end_time},
+        ${USER_RESPONSES_TABLE_FIELDS.row},
+        ${USER_RESPONSES_TABLE_FIELDS.column},
         ${USER_RESPONSES_TABLE_FIELDS.start_location},
         ${USER_RESPONSES_TABLE_FIELDS.end_location},
     )
     VALUES
     (
-        '${MAIN_MEETING.id}',
+        ${MAIN_MEETING.id},
         '${firstNameLastInitial}',
         '${TIME_ZONE}',
-        '${selection.start_time}',
-        '${selection.end_time}',
+        '${selection.row}',
+        '${selection.column}',
         '${selection.start_location}',
         '${selection.end_location}',
     )
     `;
 
     // TODO: Handle success/failure
-    db.exec(sqlInitDb);
+    db.exec(sql);
 }
