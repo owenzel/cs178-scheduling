@@ -4,14 +4,13 @@
 	// TODO: Location form should be associated with a slot
 	// TODO: Location should appear in some kind of legend on the side?
 	// TODO: Save & properly retrieve location (persistent storage)
-	// TODO: Add option for virtual location to location form
+	// TODO (tentative): Add option for virtual location to location form
 	// TODO: Add success/error message to let user know that data was saved properly
 	// TODO: Add success/error message to let user know that csv was written to
-	// TODO: Update styling to be consistent (use Bootstrap?)
 	// TODO: Add time zone (IF TIME)
 
 	import Modal from "../../../../../lib/components/Modal.svelte";
-	import { Button } from "sveltestrap";
+	import { Navbar, Button } from "sveltestrap";
 
 	// Access the loaded data
 	export let data;
@@ -66,7 +65,7 @@
 	let selectedBlockBounds = [[], []];
 	let nextForm = false;
 	
-	let child;
+	let locationModal;
 	let times = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30', '5:00', '5:30', '6:00', '6:30', '7:00'];
 	
 	const beginDrag = () => {
@@ -93,7 +92,7 @@
 
 				toggle(r,c);
 			}
-			child.show();
+			locationModal.show();
 		}
 		if (isDrag && firstSelectedSlotPos !== null) {
 			// If this is the start of a new drag
@@ -121,7 +120,7 @@
 
 	// TODO: Update
 	function saveLocation (e) {
-		child.show();
+		locationModal.show();
 		const formData = new FormData(e.target);
 		const data = {};
 		for (let field of formData) {
@@ -245,12 +244,18 @@
 </style>
 
 <!-- TODO: Add column headers: days of week -->
-<Button href="/">Log Out</Button>
-<Button on:click={handleExportToCSV}>Export All Results to CSV</Button>
+<Navbar color="light" light expand="md">
+	<Button href="/">Log Out</Button>
+	<div>
+		<Button on:click={saveSelections} disabled={!newSelectionWasMade} color='success' class="mx-3">
+			Save My Selections
+		</Button>
+		<Button on:click={handleExportToCSV}>Export All Results to CSV</Button>
+	</div>
+</Navbar>
+<h5 class="instructions">Select the times when you are NOT available.</h5>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
 <div class="scheduler">
-	<h1>My Event</h1>
-	<br>
 	<table class="calendar">
 		{#each times as time}
 			<tr class="times">
@@ -268,22 +273,18 @@
 		{/each}
 	</table>
 	<!-- Modal Forms -->
-	<!-- TODO: Fix end location not submitting -->
-	<Modal bind:this={child} on:show={e => child.shown = e.detail} on:show={()=>nextForm=false}>
+	<Modal bind:this={locationModal} on:show={e => locationModal.shown = e.detail} on:show={()=>nextForm=false}>
 	<form class="locform" on:submit={saveLocation}>
 	<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
-		<label for="start_location">Where will you start?</label>
+		<label for="start_location">Where will you be at the START of this time block?</label>
 		<input type="text" id="start_location" name="start_location">
-		<button type="button" on:click={()=>nextForm=!nextForm}>Next</button>
+		<Button type="button" on:click={()=>nextForm=!nextForm} color="light">Next</Button>
 	</fieldset>
 	<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
-		<label for="end_location">Where will you end?</label>
+		<label for="end_location">Where will you be at the END of this time block?</label>
 		<input type="text" id="end_location" name="end_location">
-		<button type="submit">Submit</button>
+		<Button type="submit" color="light">Submit</Button>
 	</fieldset>
 	</form>
 	</Modal>
-	<button type="button" on:click={saveSelections} disabled={!newSelectionWasMade}>
-		Save my selections!
-	</button>
 </div>
