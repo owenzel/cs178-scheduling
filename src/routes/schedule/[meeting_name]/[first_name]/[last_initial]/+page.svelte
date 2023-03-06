@@ -14,8 +14,9 @@
 	// Access the loaded data
 	export let data;
 
+	let curr_locs=['',''];
 	let columns = new Array(7);
-	let rows = new Array(20);
+	let rows = new Array(40);
 
 	const initialUserTime = Date.now();
 
@@ -38,9 +39,10 @@
 		for (let c = 0; c < columns.length; c++) {
 			// TODO: Update to empty strings for start & end location
 			selection_state_col.push({
+				hovered: false,
 				selected: false,
-				start_location: 'test',
-				end_location: 'test',
+				start_location: '',
+				end_location: '',
 			});
 		}
 		selection_state.push(selection_state_col);
@@ -63,14 +65,18 @@
 	let firstSelectedSlotPos = null;
 	let selectedBlockBounds = [[], []];
 	let nextForm = false;
+	let showLoc = false;
+	let formOpen = false;
 	
 	let locationModal;
+	let locationModalEdit;
 	let alertColor = '';
 	let alertMessage = '';
 	let enableAlert = false;
 
 	let times = ['9:00', '9:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '1:00', '1:30', '2:00', '2:30', '3:00', '3:30', '4:00', '4:30', '5:00', '5:30', '6:00', '6:30', '7:00'];
-	
+	let days = ['Sun', 'Mon','Tue','Wed','Thu','Fri','Sat'];
+
 	const beginDrag = () => {
 		isDrag = true;
 	}
@@ -86,13 +92,24 @@
 	}
 	
 	const mouseHandler = (r, c) => (e) => {
+		let broken = false;
+		let count = 0;
 		if (e.type === 'mousedown') {
-			if (firstSelectedSlotPos == null) {
-				firstSelectedSlotPos = [r, c];
-
-				toggle(r,c);
+			if (selection_state[r][c].start_location == '') {
+				if (firstSelectedSlotPos == null) {
+					firstSelectedSlotPos = [r, c];
+					toggle(r,c);
+				}
+				locationModal.show();
 			}
-			locationModal.show();
+			else {
+				showLoc = false;
+
+			}
+			// if (!formOpen) {
+			// 	locationModal.show();
+			// 	formOpen = true;
+			// }
 		}
 		if (isDrag && firstSelectedSlotPos !== null) {
 			// If this is the start of a new drag
@@ -116,7 +133,63 @@
 				}
 			}
 		}
+		// for (let i = 0; i < rows.length; i++) {
+		// 		for (let j = 0; j < columns.length; j++) {
+		// 			if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
+		// 				count++;
+		// 				broken = true;
+		// 				break;
+		// 			}
+		// 		}
+		// 		if (broken) {
+		// 			break;
+		// 		}
+		// }
+		// if (count == 0) {
+		// 	if (formOpen) {
+		// 		locationModal.show();
+		// 	}
+		// 	formOpen = false;
+		// }
 	}
+
+	const handleHover = (r, c) => (e) => {
+		if (locationModal.shown != true) {
+			if (selection_state[r][c].selected){
+				curr_locs = [selection_state[r][c].start_location, selection_state[r][c].end_location]
+				for (let i = 0; i < rows.length; i++) {
+					for (let j = 0; j < columns.length; j++) {
+						if (selection_state[i][j].selected &&
+							selection_state[r][c].start_location == selection_state[i][j].start_location && 
+							selection_state[r][c].end_location == selection_state[i][j].end_location
+							&& selection_state[r][c].start_location != '' && selection_state[r][c].end_location != ''){
+								selection_state[i][j].hovered = !selection_state[i][j].hovered;
+						}
+					}
+				}
+				showLoc = true;
+			}
+			else {
+				showLoc = false;
+			}
+		}
+	}
+
+	const toggleHover = (r, c) => {
+		for (let i = 0; i < rows.length; i++) {
+			for (let j = 0; j < columns.length; j++) {
+				if (selection_state[i][j].selected &&
+					selection_state[r][c].start_location == selection_state[i][j].start_location && 
+					selection_state[r][c].end_location == selection_state[i][j].end_location
+					&& selection_state[r][c].start_location != '' && selection_state[r][c].end_location != ''){
+						selection_state[i][j].hovered = !selection_state[i][j].hovered;
+				}
+			}
+		}
+	}
+
+
+
 
 	// TODO: Update
 	function saveLocation (e) {
@@ -224,27 +297,42 @@
 		alertMessage = message;
 		enableAlert = true;
 	}
-
+	
 </script>
 
 <style>
 	td {
 		background-color: pink;
-		border: 1px solid white;
 		width: 100px;
-		height: 30px;
+		height: 15px;
+		border-right: 1px solid white;
+	}
+
+	tr:nth-child(odd) td{
+		border-bottom: 1px solid white;
 	}
 
 	th {
 		position: relative;
-		top: -7.5px;
+		top: 10.5px;
 		font-size: 10px;
 		padding-bottom: 14px;
 		
 	}
+
+	.days {
+		padding-bottom: 0px;
+		top: -10px;
+		font-size: 12px;
+	}
+
 	.selected {
 		background-color: blue;
 	}
+	.hovered {
+		background-color: rgba(0, 0, 0, 0.5);
+	}
+
 </style>
 
 <!-- TODO: Add column headers: days of week -->
@@ -272,10 +360,15 @@
 		{/each}
 	</table>
 	<table class="calendar">
+				<tr class="times">
+		{#each columns as _column, h}
+			<th class="days">{days[h]}</th>
+		{/each}
+		</tr>
 		{#each rows as _row, r}
-			<tr >
+			<tr on:click={handleHover}>
 				{#each columns as _column, c}
-					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} class:selected="{selection_state[r][c].selected}"></td>
+					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} on:mouseover={handleHover(r,c)} on:mouseout={handleHover(r,c)} class:selected="{selection_state[r][c].selected}" class:hovered="{selection_state[r][c].hovered}"></td>
 				{/each}
 			</tr>
 		{/each}
@@ -296,4 +389,17 @@
 		</fieldset>
 		</form>
 	</Modal>
+
+	<Modal bind:this={locationModalEdit} on:show={e => locationModalEdit.shown = e.detail}>
+		<form class="locform" on:submit={saveLocation}>
+			<label for="start_location">Where will you be at the START of this time block?</label>
+			<input type="text" id="start_location" name="start_location" value="{curr_locs[0]}">
+			<label for="end_location">Where will you be at the END of this time block?</label>
+			<input type="text" id="end_location" name="end_location" value="{curr_locs[1]}">
+			<Button type="submit" color="light">Submit</Button>
+		</form>
+	</Modal>
+
+	<div class='{showLoc === true ? 'geolabel':'hidden'}'><h3>You are starting at</h3><p>{curr_locs[0]}</p>
+		<h3>You are ending at</h3><p>{curr_locs[1]}</p></div>
 </div>

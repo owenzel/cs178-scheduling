@@ -20,7 +20,7 @@ h1 {
 
 .calendar {
     display: inline-block;
-    height: 80vh !important;
+    height: 90vh !important;
 }
 
 .times {
@@ -38,4 +38,22 @@ h1 {
 	
 .hidden {
     display: none;
+}
+
+.geolabel {
+    position: fixed;
+    color: black;
+    display: inline-block;
+    padding: 100px;
+    margin: auto;
+}
+
+h3 {
+    font-size: 20px;
+}
+
+p {
+    font-size: 30px;
+    font-weight: bold;
+    color: blue;
 }
