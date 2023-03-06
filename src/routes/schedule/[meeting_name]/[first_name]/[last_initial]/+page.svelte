@@ -82,8 +82,28 @@
 	}
 	
 	const endDrag = () => {
+		let count = 0;
+		let broken = false;
 		isDrag = false;
 		firstSelectedSlotPos = null;
+		for (let i = 0; i < rows.length; i++) {
+				for (let j = 0; j < columns.length; j++) {
+					if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
+						count++;
+						broken = true;
+						break;
+					}
+				}
+				if (broken) {
+					break;
+				}
+			}
+			if (count == 0) {
+				if (formOpen) {
+					locationModal.show();
+				}
+				formOpen = false;
+			}
 	}
 	
 	const toggle = (r, c) => {
@@ -92,6 +112,7 @@
 	}
 	
 	const mouseHandler = (r, c) => (e) => {
+		console.log(formOpen);
 		let broken = false;
 		let count = 0;
 		if (e.type === 'mousedown') {
@@ -100,16 +121,34 @@
 					firstSelectedSlotPos = [r, c];
 					toggle(r,c);
 				}
-				locationModal.show();
+
 			}
 			else {
 				showLoc = false;
 
 			}
-			// if (!formOpen) {
-			// 	locationModal.show();
-			// 	formOpen = true;
-			// }
+			if (!formOpen) {
+				locationModal.show();
+				formOpen = true;
+			}
+			for (let i = 0; i < rows.length; i++) {
+				for (let j = 0; j < columns.length; j++) {
+					if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
+						count++;
+						broken = true;
+						break;
+					}
+				}
+				if (broken) {
+					break;
+				}
+			}
+			if (count == 0) {
+				if (formOpen) {
+					locationModal.show();
+				}
+				formOpen = false;
+			}
 		}
 		if (isDrag && firstSelectedSlotPos !== null) {
 			// If this is the start of a new drag
@@ -133,24 +172,6 @@
 				}
 			}
 		}
-		// for (let i = 0; i < rows.length; i++) {
-		// 		for (let j = 0; j < columns.length; j++) {
-		// 			if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
-		// 				count++;
-		// 				broken = true;
-		// 				break;
-		// 			}
-		// 		}
-		// 		if (broken) {
-		// 			break;
-		// 		}
-		// }
-		// if (count == 0) {
-		// 	if (formOpen) {
-		// 		locationModal.show();
-		// 	}
-		// 	formOpen = false;
-		// }
 	}
 
 	const handleHover = (r, c) => (e) => {
@@ -193,6 +214,7 @@
 
 	// TODO: Update
 	function saveLocation (e) {
+		formOpen = false;
 		locationModal.show();
 		const formData = new FormData(e.target);
 		const data = {};
@@ -317,7 +339,6 @@
 		top: 10.5px;
 		font-size: 10px;
 		padding-bottom: 14px;
-		
 	}
 
 	.days {
