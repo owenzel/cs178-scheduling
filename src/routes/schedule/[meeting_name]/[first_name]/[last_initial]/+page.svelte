@@ -15,8 +15,11 @@
 	export let data;
 
 	let curr_locs=['',''];
+	let to_edit = false;
+	let edit_detected = false;
 	let columns = new Array(7);
 	let rows = new Array(40);
+	let textFocus = false;
 
 	const initialUserTime = Date.now();
 
@@ -41,6 +44,7 @@
 			selection_state_col.push({
 				hovered: false,
 				selected: false,
+				editing: false,
 				start_location: '',
 				end_location: '',
 			});
@@ -86,6 +90,8 @@
 		let broken = false;
 		isDrag = false;
 		firstSelectedSlotPos = null;
+
+		// Hide form once unlabeled elements are deselected
 		for (let i = 0; i < rows.length; i++) {
 				for (let j = 0; j < columns.length; j++) {
 					if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
@@ -106,49 +112,49 @@
 			}
 	}
 	
+
+	// Toggle between unselected/selected and editing states
 	const toggle = (r, c) => {
 		newSelectionWasMade = true;
-		selection_state[r][c].selected = !selection_state[r][c].selected;
+		if (selection_state[r][c].hovered) {
+			selection_state[r][c].editing = !selection_state[r][c].editing;
+			selection_state[r][c].hovered = !selection_state[r][c].hovered;
+		}
+		else if (!to_edit){
+			console.log(to_edit);
+			selection_state[r][c].selected = !selection_state[r][c].selected;
+		}
 	}
 	
 	const mouseHandler = (r, c) => (e) => {
+		for (let i = 0; i < rows.length; i++) {
+			for (let j = 0; j < columns.length; j++) {
+				if (selection_state[i][j].editing) {
+					edit_detected = true;
+				}
+			}
+		}
+		if (edit_detected != true) {
+			to_edit = false;
+		}
+		else {
+			to_edit = true;
+			edit_detected = false;
+		}
 		console.log(formOpen);
 		let broken = false;
 		let count = 0;
+		// Toggle slots on mousedown
 		if (e.type === 'mousedown') {
-			if (selection_state[r][c].start_location == '') {
-				if (firstSelectedSlotPos == null) {
-					firstSelectedSlotPos = [r, c];
-					toggle(r,c);
-				}
-
-			}
-			else {
-				showLoc = false;
-
+			if (firstSelectedSlotPos == null) {
+				firstSelectedSlotPos = [r, c];
+				toggle(r,c);
 			}
 			if (!formOpen) {
 				locationModal.show();
 				formOpen = true;
 			}
-			for (let i = 0; i < rows.length; i++) {
-				for (let j = 0; j < columns.length; j++) {
-					if (selection_state[i][j].selected && selection_state[i][j].start_location ==''){
-						count++;
-						broken = true;
-						break;
-					}
-				}
-				if (broken) {
-					break;
-				}
-			}
-			if (count == 0) {
-				if (formOpen) {
-					locationModal.show();
-				}
-				formOpen = false;
-			}
+			
 		}
 		if (isDrag && firstSelectedSlotPos !== null) {
 			// If this is the start of a new drag
@@ -168,23 +174,34 @@
 
 			for (let i = min_x; i < max_x + 1; i++) {
 				for (let j = min_y; j < max_y + 1; j++) {
-					selection_state[i][j].selected = selection_state[first_x][first_y].selected;
+					if (selection_state[i][j].hovered) {
+						selection_state[i][j].editing = selection_state[first_x][first_y].editing ;
+						selection_state[i][j].hovered = selection_state[first_x][first_y].hovered;
+					}
+					else if (!to_edit) {
+						selection_state[i][j].selected = selection_state[first_x][first_y].selected;
+					}
 				}
 			}
 		}
 	}
 
-	const handleHover = (r, c) => (e) => {
+	const handleHover = (r, c, action) => (e) => {
 		if (locationModal.shown != true) {
 			if (selection_state[r][c].selected){
-				curr_locs = [selection_state[r][c].start_location, selection_state[r][c].end_location]
+				curr_locs = [selection_state[r][c].start_location, selection_state[r][c].end_location];
 				for (let i = 0; i < rows.length; i++) {
 					for (let j = 0; j < columns.length; j++) {
 						if (selection_state[i][j].selected &&
 							selection_state[r][c].start_location == selection_state[i][j].start_location && 
 							selection_state[r][c].end_location == selection_state[i][j].end_location
 							&& selection_state[r][c].start_location != '' && selection_state[r][c].end_location != ''){
-								selection_state[i][j].hovered = !selection_state[i][j].hovered;
+								if (action == "on"){
+									selection_state[i][j].hovered = true;
+								}
+								else {
+									selection_state[i][j].hovered = false;
+								}
 						}
 					}
 				}
@@ -203,7 +220,7 @@
 					selection_state[r][c].start_location == selection_state[i][j].start_location && 
 					selection_state[r][c].end_location == selection_state[i][j].end_location
 					&& selection_state[r][c].start_location != '' && selection_state[r][c].end_location != ''){
-						selection_state[i][j].hovered = !selection_state[i][j].hovered;
+						selection_state[i][j].hovered = true;
 				}
 			}
 		}
@@ -231,7 +248,47 @@
 		}
 	}
 
-	async function logUserTime() {
+	function updateLocation (e) {
+		to_edit = false;
+		const formData = new FormData(e.target);
+		const data = {};
+		for (let field of formData) {
+			const [key, value] = field;
+			data[key] = value;
+		}
+		console.log(data);
+		for (let i = 0; i < rows.length; i++) {
+			for (let j = 0; j < columns.length; j++) {
+				if (selection_state[i][j].editing) {
+					selection_state[i][j].start_location = data["start_location"];
+					selection_state[i][j].end_location = data["end_location"];
+					selection_state[i][j].editing = false;
+					selection_state[i][j].hovered = true;
+				}
+			}
+		}
+	}
+
+	function removeLocation () {
+		to_edit = false;
+		for (let i = 0; i < rows.length; i++) {
+			for (let j = 0; j < columns.length; j++) {
+				if (selection_state[i][j].editing) {
+					selection_state[i][j].editing = false;
+					selection_state[i][j].start_location = '';
+					selection_state[i][j].end_location = '';
+					selection_state[i][j].selected = false;
+				}
+			}
+		}
+	}
+
+	function handleKeyDown(event) {
+		if (event.keyCode == 8 && !textFocus) {
+			removeLocation();
+		}
+	}
+ 	async function logUserTime() {
 		// Calculate the time the user spent entering input
 		const finalUserTime = Date.now();
 		const timeElapsedMs = finalUserTime - initialUserTime;
@@ -322,40 +379,6 @@
 	
 </script>
 
-<style>
-	td {
-		background-color: pink;
-		width: 100px;
-		height: 15px;
-		border-right: 1px solid white;
-	}
-
-	tr:nth-child(odd) td{
-		border-bottom: 1px solid white;
-	}
-
-	th {
-		position: relative;
-		top: 10.5px;
-		font-size: 10px;
-		padding-bottom: 14px;
-	}
-
-	.days {
-		padding-bottom: 0px;
-		top: -10px;
-		font-size: 12px;
-	}
-
-	.selected {
-		background-color: blue;
-	}
-	.hovered {
-		background-color: rgba(0, 0, 0, 0.5);
-	}
-
-</style>
-
 <!-- TODO: Add column headers: days of week -->
 <Navbar color="light" light expand="md">
 	<Button href="/">Log Out</Button>
@@ -371,7 +394,7 @@
 <ResponseAlert hidden={!enableAlert} color={alertColor} message={alertMessage} />
 
 <h5 class="instructions">Select the times when you are NOT available.</h5>
-<svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} />
+<svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} on:keydown={handleKeyDown}/>
 <div class="scheduler">
 	<table class="calendar">
 		{#each times as time}
@@ -389,7 +412,7 @@
 		{#each rows as _row, r}
 			<tr on:click={handleHover}>
 				{#each columns as _column, c}
-					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} on:mouseover={handleHover(r,c)} on:mouseout={handleHover(r,c)} class:selected="{selection_state[r][c].selected}" class:hovered="{selection_state[r][c].hovered}"></td>
+					<td on:mousedown={mouseHandler(r , c)} on:mouseenter={mouseHandler(r, c)} on:mouseover={handleHover(r,c,'on')} on:mouseout={handleHover(r,c,'off')} class:selected="{selection_state[r][c].selected}" class:hovered="{selection_state[r][c].hovered}" class:editing="{selection_state[r][c].editing}"></td>
 				{/each}
 			</tr>
 		{/each}
@@ -400,26 +423,27 @@
 		<form class="locform" on:submit={saveLocation}>
 		<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
 			<label for="start_location">Where will you be at the START of this time block?</label>
-			<input type="text" id="start_location" name="start_location">
+			<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} required>
 			<Button type="button" on:click={()=>nextForm=!nextForm} color="light">Next</Button>
 		</fieldset>
 		<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
 			<label for="end_location">Where will you be at the END of this time block?</label>
-			<input type="text" id="end_location" name="end_location">
+			<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} required> <br>
+			<Button type="button" on:click={()=>nextForm=!nextForm}>Go back</Button>
 			<Button type="submit" color="light">Submit</Button>
 		</fieldset>
 		</form>
 	</Modal>
 
-	<Modal bind:this={locationModalEdit} on:show={e => locationModalEdit.shown = e.detail}>
-		<form class="locform" on:submit={saveLocation}>
-			<label for="start_location">Where will you be at the START of this time block?</label>
-			<input type="text" id="start_location" name="start_location" value="{curr_locs[0]}">
-			<label for="end_location">Where will you be at the END of this time block?</label>
-			<input type="text" id="end_location" name="end_location" value="{curr_locs[1]}">
-			<Button type="submit" color="light">Submit</Button>
-		</form>
-	</Modal>
+	<form class="locform_edit {to_edit === true ? '':'hidden'} " on:submit={updateLocation}>
+		<label for="start_location">Where will you be at the START of this time block?</label>
+		<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} required>
+		<label for="end_location">Where will you be at the END of this time block?</label>
+		<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} required>
+		<br>
+		<Button type="submit" color="light">Edit Locations</Button>
+		<Button type="button" on:click={removeLocation}>Free Slots</Button>
+	</form>
 
 	<div class='{showLoc === true ? 'geolabel':'hidden'}'><h3>You are starting at</h3><p>{curr_locs[0]}</p>
 		<h3>You are ending at</h3><p>{curr_locs[1]}</p></div>

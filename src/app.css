@@ -1,3 +1,39 @@
+td {
+    background-color: pink;
+    width: 100px;
+    height: 15px;
+    border-right: 1px solid white;
+}
+
+tr:nth-child(odd) td{
+    border-bottom: 1px solid white;
+}
+
+th {
+    position: relative;
+    top: 10.5px;
+    font-size: 10px;
+    padding-bottom: 14px;
+}
+
+.days {
+    padding-bottom: 0px;
+    top: -10px;
+    font-size: 12px;
+}
+
+.selected {
+    background-color: blue;
+}
+
+.editing {
+    background-color: orange !important;
+}
+
+.hovered {
+    background-color: rgba(0, 0, 0, 0.4);
+}
+
 body {
     font-family: 'Trebuchet MS', sans-serif;
 }
@@ -36,16 +72,27 @@ h1 {
     margin: auto;
 }
 	
+.locform_edit {
+    position: absolute;
+    color: white;
+    display: inline-block;
+    background: rgb(108, 113, 185);
+    padding: 30px;
+    top: 450px;
+    margin: auto; 
+}
+
 .hidden {
     display: none;
 }
 
 .geolabel {
-    position: fixed;
+    position: absolute;
     color: black;
     display: inline-block;
-    padding: 100px;
+    padding: 50px;
     margin: auto;
+    top: 150px;
 }
 
 h3 {
@@ -56,4 +103,8 @@ p {
     font-size: 30px;
     font-weight: bold;
     color: blue;
+}
+
+#end_location {
+    margin-bottom: 20px !important;
 }
