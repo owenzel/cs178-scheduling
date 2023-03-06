@@ -240,10 +240,18 @@
 			data[key] = value;
 		}
 		console.log(data);
-		for (let i = unlabeled[0]; i < unlabeled[1] + 1; i++) {
-			for (let j = unlabeled[2]; j < unlabeled[3] + 1; j++) {
-				selection_state[i][j].start_location = data["start_location"];
-				selection_state[i][j].end_location = data["end_location"];
+		// for (let i = unlabeled[0]; i < unlabeled[1] + 1; i++) {
+		// 	for (let j = unlabeled[2]; j < unlabeled[3] + 1; j++) {
+		// 		selection_state[i][j].start_location = data["start_location"];
+		// 		selection_state[i][j].end_location = data["end_location"];
+		// 	}
+		// }
+		for (let i = 0; i < rows.length; i++) {
+			for (let j = 0; j < columns.length; j++) {
+				if (selection_state[i][j].selected && selection_state[i][j].start_location == '') {
+					selection_state[i][j].start_location = data["start_location"];
+					selection_state[i][j].end_location = data["end_location"];
+				}
 			}
 		}
 	}
@@ -393,7 +401,8 @@
 <!-- Alerts -->
 <ResponseAlert hidden={!enableAlert} color={alertColor} message={alertMessage} />
 
-<h5 class="instructions">Select the times when you are NOT available.</h5>
+<h5 class="instructions">Select the times when you are NOT available.</h5><br>
+<h5 class="instructions">Drag on selections to edit.</h5>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} on:keydown={handleKeyDown}/>
 <div class="scheduler">
 	<table class="calendar">
@@ -423,12 +432,12 @@
 		<form class="locform" on:submit={saveLocation}>
 		<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
 			<label for="start_location">Where will you be at the START of this time block?</label>
-			<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} required>
+			<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} autofocus required>
 			<Button type="button" on:click={()=>nextForm=!nextForm} color="light">Next</Button>
 		</fieldset>
 		<fieldset id="end" class='{nextForm === true ? '':'hidden'}'>
 			<label for="end_location">Where will you be at the END of this time block?</label>
-			<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} required> <br>
+			<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} autofocus required> <br>
 			<Button type="button" on:click={()=>nextForm=!nextForm}>Go back</Button>
 			<Button type="submit" color="light">Submit</Button>
 		</fieldset>
@@ -437,9 +446,9 @@
 
 	<form class="locform_edit {to_edit === true ? '':'hidden'} " on:submit={updateLocation}>
 		<label for="start_location">Where will you be at the START of this time block?</label>
-		<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} required>
+		<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} autofocus required>
 		<label for="end_location">Where will you be at the END of this time block?</label>
-		<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} required>
+		<input type="text" id="end_location" name="end_location" on:focus={()=>textFocus=!textFocus} autofocus required>
 		<br>
 		<Button type="submit" color="light">Edit Locations</Button>
 		<Button type="button" on:click={removeLocation}>Free Slots</Button>
