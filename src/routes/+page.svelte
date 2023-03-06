@@ -3,10 +3,10 @@
 </script>
 
 
-<div class="w-50 text-center mx-auto">
-	<h1>ScheduleMe</h1>
+<div class="welcome">
+	<h1>sched178</h1>
 
-	<Form method="POST">
+	<Form class="login" method="POST">
 		<FormGroup>
 			<Input
 			type="text"
@@ -16,13 +16,14 @@
 			required
 			/>
 		</FormGroup>
-		<FormGroup>
+		<FormGroup> 
 			<Input
 			type="text"
 			name="lastInitial"
 			id="lastInitial"
 			placeholder="Last Initial"
 			required
+			maxlength="1"
 			/>
 		</FormGroup>
 		<Button color='primary' type='submit'>Sign In</Button>

@@ -1,3 +1,21 @@
+.welcome {
+    width: 100%;
+    text-align: center;
+    display: block;
+    justify-content: center;
+    align-items: center;
+    margin-top: 200px;
+}
+
+.login {
+    margin: 0 auto;
+    max-width: 150px;
+}
+
+#lastInitial {
+    max-width: 100px;
+    margin: 0 auto;
+}
 td {
     background-color: rgb(113, 219, 198);
     width: 100px;
@@ -40,7 +58,7 @@ body {
 
 h1 {
     font-size: 50px;
-    color: blue;
+    color: rgb(231, 111, 121);
 }
 
 .scheduler {
