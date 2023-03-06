@@ -1,5 +1,5 @@
 td {
-    background-color: pink;
+    background-color: rgb(113, 219, 198);
     width: 100px;
     height: 15px;
     border-right: 1px solid white;
@@ -23,19 +23,19 @@ th {
 }
 
 .selected {
-    background-color: blue;
+    background-color: rgb(231, 111, 121);
 }
 
 .editing {
-    background-color: orange !important;
+    background-color: rgb(240, 199, 18) !important;
 }
 
 .hovered {
     background-color: rgba(0, 0, 0, 0.4);
 }
-
 body {
     font-family: 'Trebuchet MS', sans-serif;
+    background-color: rgb(216, 230, 227) !important;
 }
 
 h1 {
@@ -51,7 +51,11 @@ h1 {
 }
 
 .instructions {
+    position: relative;
     margin-left: 280px;
+    top: -25px;
+    display: block;
+    font-size: 16px;
 }
 
 .calendar {
@@ -70,6 +74,7 @@ h1 {
     background: rgb(108, 113, 185);
     padding: 50px;
     margin: auto;
+    border-radius: 10px;
 }
 	
 .locform_edit {
@@ -80,6 +85,7 @@ h1 {
     padding: 30px;
     top: 450px;
     margin: auto; 
+    border-radius: 10px;
 }
 
 .hidden {
@@ -108,3 +114,4 @@ p {
 #end_location {
     margin-bottom: 20px !important;
 }
+
