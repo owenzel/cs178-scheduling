@@ -1,15 +1,9 @@
 <script>
-	// TODO: Label concepts
-	// TODO: Unselect
-	// TODO: Location form should be associated with a slot
-	// TODO: Location should appear in some kind of legend on the side?
-	// TODO: Save & properly retrieve location (persistent storage)
-	// TODO (tentative): Add option for virtual location to location form
-	// TODO: Add time zone (IF TIME)
-
 	import Modal from "../../../../../lib/components/Modal.svelte";
 	import ResponseAlert from "../../../../../lib/components/ResponseAlert.svelte";
 	import { Navbar, Button } from "sveltestrap";
+
+	// CONCEPT: Selection, Editing, Geolabel: This contains the HTML and relevant javascript code for selecting available time slots, associating a location/geolabeling (via a pop up form), and changing a selection on the page
 
 	// Access the loaded data
 	export let data;
@@ -226,10 +220,6 @@
 		}
 	}
 
-
-
-
-	// TODO: Update
 	function saveLocation (e) {
 		formOpen = false;
 		locationModal.show();
@@ -240,12 +230,6 @@
 			data[key] = value;
 		}
 		console.log(data);
-		// for (let i = unlabeled[0]; i < unlabeled[1] + 1; i++) {
-		// 	for (let j = unlabeled[2]; j < unlabeled[3] + 1; j++) {
-		// 		selection_state[i][j].start_location = data["start_location"];
-		// 		selection_state[i][j].end_location = data["end_location"];
-		// 	}
-		// }
 		for (let i = 0; i < rows.length; i++) {
 			for (let j = 0; j < columns.length; j++) {
 				if (selection_state[i][j].selected && selection_state[i][j].start_location == '') {
@@ -387,7 +371,6 @@
 	
 </script>
 
-<!-- TODO: Add column headers: days of week -->
 <Navbar color="light" light expand="md">
 	<Button href="/">Log Out</Button>
 	<div>
@@ -398,9 +381,10 @@
 	</div>
 </Navbar>
 
-<!-- Alerts -->
+<!-- Alerts (CONCEPT: editing: these provide feedback to the user about the success of saving their data) -->
 <ResponseAlert hidden={!enableAlert} color={alertColor} message={alertMessage} />
 
+<!-- CONCEPT: Selection: this is the main HTML code (calling the relevant functions defined above) for selecting, deselecting, or editing selected time slots -->
 <h5 class="instructions">Select the times when you are NOT available.</h5><br>
 <h5 class="instructions">Drag on selections to edit.</h5>
 <svelte:window on:mousedown={beginDrag} on:mouseup={endDrag} on:keydown={handleKeyDown}/>
@@ -427,7 +411,7 @@
 		{/each}
 	</table>
 
-	<!-- Modal Forms -->
+	<!-- Modal Forms (CONCEPT: Geolabeling: this is the pop up form for geolabeling a selection) -->
 	<Modal bind:this={locationModal} on:show={e => locationModal.shown = e.detail} on:show={()=>nextForm=false}>
 		<form class="locform" on:submit={saveLocation}>
 		<fieldset id="start" class='{nextForm === false ? '':'hidden'}'>
@@ -444,6 +428,7 @@
 		</form>
 	</Modal>
 
+	<!-- CONCEPT: Geolabeling & editing: this is the pop up form for viewing and editing a geolabeled selection -->
 	<form class="locform_edit {to_edit === true ? '':'hidden'} " on:submit={updateLocation}>
 		<label for="start_location">Where will you be at the START of this time block?</label>
 		<input type="text" id="start_location" name="start_location" on:focus={()=>textFocus=!textFocus} autofocus required>

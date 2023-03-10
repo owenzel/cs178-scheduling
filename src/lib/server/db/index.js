@@ -1,6 +1,8 @@
 import Database from 'better-sqlite3';
 import { DB_PATH } from '$env/static/private';
 
+// CONCEPT: Editing: database functionality for saving and loading users' selections (and their associated locations)
+
 /*
 Database constants
 */

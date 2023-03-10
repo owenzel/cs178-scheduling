@@ -1,5 +1,7 @@
 import { updateUserTiming } from "../../../lib/server/db";
 
+// An API for calling the relevant database function to save a user's time logs
+
 export async function POST({ request }) {
 
     try {

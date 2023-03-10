@@ -1,6 +1,8 @@
 import { getAllUserTiming } from "../../../lib/server/db";
 import { writeFileSync } from "fs";
 
+// An API for fetching users time logs from the database and writing them to a csv `timing_logs.csv`
+
 export async function POST() {
 
     try {

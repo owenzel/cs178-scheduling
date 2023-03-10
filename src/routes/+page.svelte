@@ -2,6 +2,7 @@
 	import { Form, FormGroup, Input, Button } from 'sveltestrap';
 </script>
 
+<!-- CONCEPT: Editing: a form to log in (or create a new account) -->
 
 <div class="welcome">
 	<h1>sched178</h1>

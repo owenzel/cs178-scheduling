@@ -1,3 +1,4 @@
+<!-- CONCEPT: Geolabel: functionality for displaying the location form popup -->
 <script>
     import { createEventDispatcher } from 'svelte';
 
